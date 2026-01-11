@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Discord Bot Dashboard</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Discord Bot Dashboard</h1>
+
+      <section id="status">
+        <h2>Status</h2>
+        <p id="statusText">Loading...</p>
+        <button id="refreshBtn">Refresh Status</button>
+      </section>
+
+      <section id="send">
+        <h2>Send Message</h2>
+        <label>Channel ID</label>
+        <input id="channelId" placeholder="Channel ID" />
+        <label>Message</label>
+        <textarea id="messageText" placeholder="Message"></textarea>
+        <button id="sendBtn">Send</button>
+        <p id="sendResult"></p>
+      </section>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
