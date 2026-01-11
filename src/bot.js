@@ -358,5 +358,23 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
-// Login to Discord
-client.login(process.env.DISCORD_TOKEN);
+// Expose client and start function for external control (dashboard/server)
+export { client };
+
+/**
+ * Start the Discord bot (login and initialize)
+ */
+export async function startBot() {
+  try {
+    await client.login(process.env.DISCORD_TOKEN);
+    console.log('Bot login initiated');
+  } catch (err) {
+    console.error('Failed to start bot:', err);
+    throw err;
+  }
+}
+
+// If this file is run directly, start the bot.
+if (process.env.START_BOT_DIRECTLY === 'true') {
+  startBot();
+}

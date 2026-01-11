@@ -1,0 +1,8 @@
+body { font-family: Arial, sans-serif; background:#f6f8fb; color:#111; }
+.container { max-width:800px; margin:28px auto; padding:20px; background:#fff; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.08); }
+h1 { margin-top:0 }
+section { margin-bottom:18px }
+input, textarea { width:100%; padding:8px; margin:6px 0 12px 0; box-sizing:border-box; }
+button { padding:10px 14px; border:none; background:#0066ff; color:#fff; border-radius:6px; cursor:pointer }
+button:hover { opacity:0.95 }
+#sendResult { margin-top:8px }
