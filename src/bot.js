@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder } from 'discord.js';
+import { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 import dotenv from 'dotenv';
 import espnAPI from './espnAPI.js';
 
@@ -200,14 +200,27 @@ client.on('interactionCreate', async interaction => {
           break;
         }
 
-        let message = '**Latest Sports News**\n\n';
-        for (const article of data.articles.slice(0, 5)) {
-          message += `**${article.headline}**\n`;
-          message += `${article.description || 'No description'}\n`;
-          message += `[Read more](${article.links.web.href})\n\n`;
+        const embeds = [];
+        const articles = data.articles.slice(0, 5);
+        
+        for (const article of articles) {
+          const embed = new EmbedBuilder()
+            .setColor('#FF0000')
+            .setTitle(article.headline)
+            .setURL(article.links.web.href)
+            .setDescription(article.description || 'No description available')
+            .setTimestamp(new Date(article.published))
+            .setFooter({ text: 'ESPN' });
+
+          // Add image if available
+          if (article.images && article.images.length > 0) {
+            embed.setImage(article.images[0].url);
+          }
+
+          embeds.push(embed);
         }
 
-        await interaction.editReply(message);
+        await interaction.editReply({ embeds: embeds });
         break;
       }
 
