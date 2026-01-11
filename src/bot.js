@@ -149,24 +149,105 @@ client.on('interactionCreate', async interaction => {
         const sportLeague = interaction.options.getString('sport').split('/');
         const date = interaction.options.getString('date');
         const data = await espnAPI.getScoreboard(sportLeague[0], sportLeague[1], date);
-        const message = espnAPI.formatScoreboard(data);
-        await interaction.editReply(message);
+        
+        if (!data.events || data.events.length === 0) {
+          await interaction.editReply('No games found for this date.');
+          break;
+        }
+
+        const embed = new EmbedBuilder()
+          .setColor('#0099ff')
+          .setTitle(`${data.leagues[0].name} Scores`)
+          .setDescription(`Date: ${data.events[0].date.split('T')[0]}`)
+          .setTimestamp()
+          .setFooter({ text: 'ESPN' });
+
+        for (const event of data.events.slice(0, 10)) {
+          const competition = event.competitions[0];
+          const homeTeam = competition.competitors.find(t => t.homeAway === 'home');
+          const awayTeam = competition.competitors.find(t => t.homeAway === 'away');
+          const detail = event.status.type.detail;
+
+          embed.addFields({
+            name: `${awayTeam.team.displayName} @ ${homeTeam.team.displayName}`,
+            value: `Score: **${awayTeam.score || '0'} - ${homeTeam.score || '0'}**\nStatus: ${detail}`,
+            inline: false
+          });
+        }
+
+        await interaction.editReply({ embeds: [embed] });
         break;
       }
 
       case 'standings': {
         const league = interaction.options.getString('league').split('/');
         const data = await espnAPI.getStandings(league[0], league[1]);
-        const message = espnAPI.formatStandings(data);
-        await interaction.editReply(message);
+        
+        if (!data.children || data.children.length === 0) {
+          await interaction.editReply('No standings data available.');
+          break;
+        }
+
+        const embed = new EmbedBuilder()
+          .setColor('#00ff00')
+          .setTitle(data.name)
+          .setTimestamp()
+          .setFooter({ text: 'ESPN' });
+
+        for (const division of data.children.slice(0, 3)) {
+          if (division.standings?.entries) {
+            let divisionText = '';
+            for (const entry of division.standings.entries.slice(0, 8)) {
+              const team = entry.team;
+              const stats = entry.stats;
+              const wins = stats.find(s => s.name === 'wins')?.value || 0;
+              const losses = stats.find(s => s.name === 'losses')?.value || 0;
+              divisionText += `${team.displayName}: **${wins}-${losses}**\n`;
+            }
+            embed.addFields({ name: division.name, value: divisionText || 'No data', inline: false });
+          }
+        }
+
+        await interaction.editReply({ embeds: [embed] });
         break;
       }
 
       case 'odds': {
         const sport = interaction.options.getString('sport').split('/');
         const data = await espnAPI.getOdds(sport[0], sport[1]);
-        const message = espnAPI.formatOdds(data);
-        await interaction.editReply(message);
+        
+        if (!data.events || data.events.length === 0) {
+          await interaction.editReply('No betting odds available at this time.');
+          break;
+        }
+
+        const embed = new EmbedBuilder()
+          .setColor('#ffaa00')
+          .setTitle('Current Betting Odds')
+          .setTimestamp()
+          .setFooter({ text: 'ESPN' });
+
+        for (const event of data.events.slice(0, 5)) {
+          const competition = event.competitions[0];
+          const homeTeam = competition.competitors.find(t => t.homeAway === 'home');
+          const awayTeam = competition.competitors.find(t => t.homeAway === 'away');
+
+          let oddsText = '';
+          if (competition.odds && competition.odds.length > 0) {
+            const odds = competition.odds[0];
+            oddsText = `Spread: **${odds.details || 'N/A'}**\nOver/Under: **${odds.overUnder || 'N/A'}**`;
+          } else {
+            oddsText = 'Odds not available';
+          }
+
+          embed.addFields({
+            name: `${awayTeam.team.displayName} @ ${homeTeam.team.displayName}`,
+            value: oddsText,
+            inline: false
+          });
+        }
+
+        await interaction.editReply({ embeds: [embed] });
         break;
       }
 
@@ -180,14 +261,20 @@ client.on('interactionCreate', async interaction => {
         }
 
         const teams = data.sports[0].leagues[0].teams;
-        let message = `**${data.sports[0].leagues[0].name} Teams**\n\n`;
+        const embed = new EmbedBuilder()
+          .setColor('#9900ff')
+          .setTitle(`${data.sports[0].leagues[0].name} Teams`)
+          .setTimestamp()
+          .setFooter({ text: 'ESPN' });
 
+        let teamsText = '';
         for (const teamObj of teams.slice(0, 32)) {
           const team = teamObj.team;
-          message += `${team.displayName} (${team.abbreviation})\n`;
+          teamsText += `${team.displayName} (**${team.abbreviation}**)\n`;
         }
 
-        await interaction.editReply(message);
+        embed.setDescription(teamsText);
+        await interaction.editReply({ embeds: [embed] });
         break;
       }
 
